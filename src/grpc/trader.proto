@@ -1,0 +1,123 @@
+/**
+ * gRPC service definition for Coordinator ↔ Trader communication.
+ * This runs over internal network with mTLS.
+ */
+
+syntax = "proto3";
+
+package behemoth.trader;
+
+option go_package = "github.com/behemoth/protocol/grpc";
+
+// The Trader service - runs inside behemoth-trader, called by coordinator.
+service TraderService {
+  // Run a backtest for a research proposal
+  rpc RunBacktest(BacktestRequest) returns (BacktestResponse);
+  
+  // Start paper trading (shadow mode)
+  rpc StartPaperShadow(PaperShadowRequest) returns (PaperShadowResponse);
+  
+  // Get paper trading results
+  rpc GetPaperResults(PaperResultsRequest) returns (PaperResultsResponse);
+  
+  // Stop paper trading
+  rpc StopPaperShadow(StopPaperRequest) returns (StopPaperResponse);
+  
+  // Health check
+  rpc HealthCheck(HealthRequest) returns (HealthResponse);
+  
+  // Get baseline performance for comparison
+  rpc GetBaseline(BaselineRequest) returns (BaselineResponse);
+}
+
+// === Backtest Messages ===
+
+message SlotModification {
+  string slot_id = 1;
+  oneof value {
+    double float_value = 2;
+    int64 int_value = 3;
+    string string_value = 4;
+  }
+}
+
+message BacktestRequest {
+  string proposal_id = 1;
+  repeated SlotModification modifications = 2;
+  int64 data_start = 3;  // Unix timestamp
+  int64 data_end = 4;    // Unix timestamp
+  string request_id = 5; // For tracking
+}
+
+message BacktestResponse {
+  bool success = 1;
+  string proposal_id = 2;
+  double relative_score = 3;    // Performance vs baseline
+  double sharpe_ratio = 4;
+  double max_drawdown = 5;
+  int32 total_trades = 6;
+  double win_rate = 7;
+  string error = 8;             // If success=false
+  string result_hash = 9;       // Hash for verification
+}
+
+// === Paper Shadow Messages ===
+
+message PaperShadowRequest {
+  string proposal_id = 1;
+  repeated SlotModification modifications = 2;
+  int32 duration_days = 3;
+}
+
+message PaperShadowResponse {
+  bool success = 1;
+  string paper_trade_id = 2;
+  string error = 3;
+}
+
+message PaperResultsRequest {
+  string paper_trade_id = 1;
+}
+
+message PaperResultsResponse {
+  string paper_trade_id = 1;
+  string status = 2;  // "running", "completed", "stopped"
+  int32 days_elapsed = 3;
+  double relative_pnl = 4;
+  double sharpe_ratio = 5;
+  bool recommend_promotion = 6;
+}
+
+message StopPaperRequest {
+  string paper_trade_id = 1;
+}
+
+message StopPaperResponse {
+  bool success = 1;
+}
+
+// === Baseline Messages ===
+
+message BaselineRequest {
+  int64 data_start = 1;
+  int64 data_end = 2;
+}
+
+message BaselineResponse {
+  double total_return = 1;
+  double sharpe_ratio = 2;
+  double max_drawdown = 3;
+  int32 total_trades = 4;
+}
+
+// === Health Messages ===
+
+message HealthRequest {}
+
+message HealthResponse {
+  bool healthy = 1;
+  string version = 2;
+  int64 uptime_seconds = 3;
+  int32 active_paper_trades = 4;
+}
+
