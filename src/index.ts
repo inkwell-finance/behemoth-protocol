@@ -1,5 +1,5 @@
 /**
- * @inkwell-finance/protocol
+ * @inkwell-finance/behemoth-protocol
  * Shared types and schemas for the Behemoth network.
  */
 
@@ -19,4 +19,7 @@ export * from './schemas';
 
 // Re-export constants
 export * from './constants';
+
+// Re-export versioning utilities
+export * from './versioning';
 

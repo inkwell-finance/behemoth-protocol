@@ -21,6 +21,7 @@ export interface BacktestResult {
   sharpe: number;
   maxDrawdown: number;
   trades: number;
+  winRate: number;
   hash: string;
 }
 

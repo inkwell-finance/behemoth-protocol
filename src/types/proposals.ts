@@ -14,7 +14,9 @@ export interface ResearchProposal {
   modifications: SlotModification[];
   hypothesis: string;
   methodology?: string;
-  signature?: string;
+  traceId?: string;
+  nonce: string;
+  signature: string;
 }
 
 export interface ValidationResult {
@@ -26,7 +28,7 @@ export interface ValidationResult {
 export interface ProposalResult {
   proposalId: string;
   researcher: string;
-  status: 'accepted' | 'rejected' | 'pending_paper' | 'promoted';
+  status: 'accepted' | 'rejected' | 'pending_paper' | 'promoted' | 'failed' | 'timeout' | 'error';
   relativeScore: number | null;
   rank: number | null;
   feedback: string;

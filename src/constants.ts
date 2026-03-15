@@ -2,18 +2,45 @@
  * Network constants.
  */
 
-// P2P Topics
-export const P2P_TOPICS = {
-  PROPOSALS: '/behemoth/proposals/1.0.0',
-  JOBS: '/behemoth/jobs/1.0.0',
-  RESULTS: '/behemoth/results/1.0.0',
-  ANNOUNCEMENTS: '/behemoth/announcements/1.0.0',
+// Protocol versioning
+export const PROTOCOL_VERSION = '1.0.0';
+export const SUPPORTED_VERSIONS = ['1.0.0'] as const;
+export type SupportedVersion = (typeof SUPPORTED_VERSIONS)[number];
+
+/**
+ * Generate a versioned topic string from a base topic path and version.
+ * Example: topicForVersion('/behemoth/proposals', '1.0.0') => '/behemoth/proposals/1.0.0'
+ */
+export function topicForVersion(base: string, version: string): string {
+  return `${base}/${version}`;
+}
+
+// Base topic paths (without version suffix)
+export const P2P_TOPIC_BASES = {
+  PROPOSALS: '/behemoth/proposals',
+  JOBS: '/behemoth/jobs',
+  RESULTS: '/behemoth/results',
+  ANNOUNCEMENTS: '/behemoth/announcements',
 } as const;
 
-// Protocol identifiers
+// P2P Topics (versioned with current PROTOCOL_VERSION for backwards compat)
+export const P2P_TOPICS = {
+  PROPOSALS: topicForVersion(P2P_TOPIC_BASES.PROPOSALS, PROTOCOL_VERSION),
+  JOBS: topicForVersion(P2P_TOPIC_BASES.JOBS, PROTOCOL_VERSION),
+  RESULTS: topicForVersion(P2P_TOPIC_BASES.RESULTS, PROTOCOL_VERSION),
+  ANNOUNCEMENTS: topicForVersion(P2P_TOPIC_BASES.ANNOUNCEMENTS, PROTOCOL_VERSION),
+} as const;
+
+// Base protocol paths (without version suffix)
+export const PROTOCOL_BASES = {
+  DIRECT_MESSAGE: '/behemoth/direct',
+  JOB_STREAM: '/behemoth/job-stream',
+} as const;
+
+// Protocol identifiers (versioned with current PROTOCOL_VERSION for backwards compat)
 export const PROTOCOLS = {
-  DIRECT_MESSAGE: '/behemoth/direct/1.0.0',
-  JOB_STREAM: '/behemoth/job-stream/1.0.0',
+  DIRECT_MESSAGE: topicForVersion(PROTOCOL_BASES.DIRECT_MESSAGE, PROTOCOL_VERSION),
+  JOB_STREAM: topicForVersion(PROTOCOL_BASES.JOB_STREAM, PROTOCOL_VERSION),
 } as const;
 
 // Default configuration values
@@ -41,14 +68,11 @@ export const DEFAULTS = {
   COMPUTE_WEIGHT: 1000,    // 10%
 } as const;
 
-// Message type strings
+// Message type strings - aligned with BehemothMessage discriminated union
 export const MESSAGE_TYPES = {
-  PROPOSAL_SUBMIT: 'proposal_submit',
-  PROPOSAL_RESULT: 'proposal_result',
-  JOB_ASSIGNED: 'job_assigned',
+  PROPOSAL: 'proposal',
+  JOB_ASSIGNMENT: 'job_assignment',
   JOB_RESULT: 'job_result',
-  SCHEMA_UPDATE: 'schema_update',
-  EPOCH_START: 'epoch_start',
-  EPOCH_END: 'epoch_end',
+  HEARTBEAT: 'heartbeat',
 } as const;
 

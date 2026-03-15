@@ -25,22 +25,22 @@ export const NormalizedTradeSchema = z.object({
 });
 
 export const OrderbookDepthSchema = z.object({
-  bid1pct: z.number(),
-  ask1pct: z.number(),
-  bid5pct: z.number(),
-  ask5pct: z.number(),
+  bid1pct: z.number().nonnegative(),
+  ask1pct: z.number().nonnegative(),
+  bid5pct: z.number().nonnegative(),
+  ask5pct: z.number().nonnegative(),
 });
 
 export const NormalizedOrderbookSchema = z.object({
   exchange: ExchangeSchema,
   symbol: z.string(),
   timestamp: z.number().int().positive(),
-  bids: z.array(PriceLevelSchema),
-  asks: z.array(PriceLevelSchema),
+  bids: z.array(PriceLevelSchema).min(1),
+  asks: z.array(PriceLevelSchema).min(1),
   midPrice: z.number().positive(),
-  spread: z.number(),
-  spreadBps: z.number(),
-  imbalance: z.number(),
+  spread: z.number().nonnegative().refine(Number.isFinite, 'Must be finite'),
+  spreadBps: z.number().nonnegative().refine(Number.isFinite, 'Must be finite'),
+  imbalance: z.number().min(-1).max(1).refine(Number.isFinite, 'Must be finite'),
   depth: OrderbookDepthSchema,
 });
 
@@ -48,10 +48,10 @@ export const NormalizedFundingSchema = z.object({
   exchange: ExchangeSchema,
   symbol: z.string(),
   timestamp: z.number().int().positive(),
-  rate: z.number(),
+  rate: z.number().min(-1.0).max(1.0),
   nextFundingTime: z.number().int(),
   aggregatedRate: z.number().optional(),
-  zScore: z.number().optional(),
+  zScore: z.number().min(-10).max(10).optional(),
 });
 
 export const CandleSchema = z.object({
@@ -74,7 +74,10 @@ export const OHLCVSchema = z.object({
   low: z.number(),
   close: z.number(),
   volume: z.number(),
-});
+}).refine(d => d.high >= d.low && d.high >= d.open && d.high >= d.close
+             && d.low <= d.open && d.low <= d.close,
+  { message: 'OHLCV relationship violated' }
+);
 
 export const PriceTickSchema = z.object({
   symbol: z.string(),

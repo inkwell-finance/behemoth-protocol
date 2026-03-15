@@ -1,5 +1,5 @@
 {
-  "name": "@inkwell-finance/protocol",
+  "name": "@inkwell-finance/behemoth-protocol",
   "version": "0.1.0",
   "description": "Shared types and schemas for the Behemoth trading network",
   "main": "dist/index.js",
@@ -7,34 +7,43 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./types": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/types/index.mjs",
-      "require": "./dist/types/index.js",
-      "types": "./dist/types/index.d.ts"
+      "require": "./dist/types/index.js"
     },
     "./schemas": {
+      "types": "./dist/schemas/index.d.ts",
       "import": "./dist/schemas/index.mjs",
-      "require": "./dist/schemas/index.js",
-      "types": "./dist/schemas/index.d.ts"
+      "require": "./dist/schemas/index.js"
+    },
+    "./grpc": {
+      "types": "./dist/grpc/index.d.ts",
+      "import": "./dist/grpc/index.mjs",
+      "require": "./dist/grpc/index.js"
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "tsup src/index.ts src/grpc/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts src/grpc/index.ts --format cjs,esm --dts --watch",
     "test": "vitest",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "clean": "rm -rf dist node_modules",
+    "proto:gen": "protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=src/grpc/generated --ts_proto_opt=esModuleInterop=true,outputServices=generic-definitions src/grpc/trader.proto",
+    "proto:check": "npm run proto:gen && git diff --exit-code src/grpc/generated/"
   },
   "dependencies": {
     "zod": "^3.22.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "ts-proto": "^1.165.0",
     "tsup": "^8.0.0",
     "typescript": "^5.3.0",
     "vitest": "^1.0.0"
